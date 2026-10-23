@@ -38,6 +38,7 @@ public class ParkingGarage {
         } else {
             method.refund(amount);
         }
+        //method.refund(amount);
         total -= amount;
     }
 

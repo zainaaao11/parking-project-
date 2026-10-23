@@ -1,0 +1,24 @@
+1)4 actors might be the reason for ParkingGarage to change and they are:
+Pricing/operations team, Payment team, Persistence team, Reporting/accounting team
+
+3) a. Add BUS, 15 MAD/hour: Current design requires modifying ParkingGarage.java because the vehicle tariff is handled by a switch
+b. Add refundable Mobile Wallet: Depending on the current cancellation logic, ParkingGarage is coupled to payment types through instanceof, so that logic may also require modification.
+c. Log receipts in a database: ParkingGarage.java must be modified because it depends directly on FileLogger.
+d. Daily report in CSV: ParkingGarage.java must be modified because report formatting is implemented there.
+
+4) CashPayment.refund() will always throw UnsupportedOperationException at runtime if we remove the condition on instanceof CashPayment.
+CashPayment violates LSP, because it claims to be a PaymentMethod but cannot support all operations promised by that abstraction.
+instanceof is not a, acceptable fix because ParkingGarage becomes dependent on concrete payment classes. Every new special payment type may require another condition, violating OCP.
+
+5) to test the fee of a truck parked for 4 hours and its checkout without creating parking.log
+But ParkingGarage directly creates/uses FileLogger, so checkout and file logging are coupled.
+Therefore we cannot test the business logic independently from the filesystem.
+This is a DIP/testability problem.
+
+8)If someone tries to cancel a cash payment through ParkingService, they will get a compile time error because the method cancel()
+requires a RefundablePayment, while CashPayment only implements PaymentMethod
+comparaison with question 4:
+Before: compiles, then may throw UnsupportedOperationException at runtime
+After: compiler rejects the invalid operation
+So the refactored design catches the problem earlier.
+
